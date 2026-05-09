@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 export type StatusBadgeVariant = 'active' | 'inactive';
 
 const VARIANT_CLASS: Record<StatusBadgeVariant, string> = {
-  active: 'bg-[#e8f3ee] text-[#259e76]',
+  active: 'bg-[#e8f3ee] text-[#009900]',
   inactive: 'bg-[#ffeceb] text-[#ff1400]',
 };
 
