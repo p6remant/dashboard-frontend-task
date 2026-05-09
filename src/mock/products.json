@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Himalayan Agarbatti",
+    "category": "Incense",
+    "brand": "GoldLeaf",
+    "unit": "Box",
+    "stock": 180,
+    "active": true
+  },
+  {
+    "id": 2,
+    "name": "Basmati Rice 5kg",
+    "category": "Grocery",
+    "brand": "RoyalGrain",
+    "unit": "Bag",
+    "stock": 95,
+    "active": true
+  },
+  {
+    "id": 3,
+    "name": "Detergent 2kg",
+    "category": "Cleaning",
+    "brand": "BrightWash",
+    "unit": "Pkt",
+    "stock": 0,
+    "active": true
+  },
+  {
+    "id": 4,
+    "name": "Green Tea 25 bags",
+    "category": "Grocery",
+    "brand": "BrightWash",
+    "unit": "Box",
+    "stock": 42,
+    "active": true
+  }
+]

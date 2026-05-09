@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "phone": "4155550101",
+    "department": "Engineering",
+    "yearsExperience": 7,
+    "salary": 95000,
+    "bonusPercent": 0.12,
+    "hireDate": "2021-03-15",
+    "active": true
+  },
+  {
+    "id": 2,
+    "name": "Bob Smith",
+    "email": "bob@example.com",
+    "phone": "4155550115",
+    "department": "Product",
+    "yearsExperience": 5,
+    "salary": 85000,
+    "bonusPercent": 0.1,
+    "hireDate": "2022-01-10",
+    "active": true
+  },
+  {
+    "id": 3,
+    "name": "Carol White",
+    "email": "carol@example.com",
+    "phone": "4155550133",
+    "department": "Design",
+    "yearsExperience": 4,
+    "salary": 75000,
+    "bonusPercent": 0.08,
+    "hireDate": "2021-06-20",
+    "active": false
+  },
+  {
+    "id": 4,
+    "name": "David Brown",
+    "email": "david@example.com",
+    "phone": "4155550141",
+    "department": "Engineering",
+    "yearsExperience": 8,
+    "salary": 92000,
+    "bonusPercent": 0.15,
+    "hireDate": "2020-09-05",
+    "active": true
+  },
+  {
+    "id": 5,
+    "name": "Emma Davis",
+    "email": "emma@example.com",
+    "phone": "4155550188",
+    "department": "Marketing",
+    "yearsExperience": 3,
+    "salary": 70000,
+    "bonusPercent": 0.07,
+    "hireDate": "2023-02-14",
+    "active": true
+  }
+]
