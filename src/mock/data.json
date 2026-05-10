@@ -1,8 +1,8 @@
 [
   {
     "id": 1,
-    "name": "Alice Johnson",
-    "email": "alice@example.com",
+    "name": "Sujan Sharma",
+    "email": "sujan@example.com",
     "phone": "4155550101",
     "department": "Engineering",
     "yearsExperience": 7,
@@ -13,8 +13,8 @@
   },
   {
     "id": 2,
-    "name": "Bob Smith",
-    "email": "bob@example.com",
+    "name": "Pratiksha Karki",
+    "email": "pratiksha@example.com",
     "phone": "4155550115",
     "department": "Product",
     "yearsExperience": 5,
@@ -25,8 +25,8 @@
   },
   {
     "id": 3,
-    "name": "Carol White",
-    "email": "carol@example.com",
+    "name": "Ramesh Thapa",
+    "email": "ramesh@example.com",
     "phone": "4155550133",
     "department": "Design",
     "yearsExperience": 4,
@@ -37,8 +37,8 @@
   },
   {
     "id": 4,
-    "name": "David Brown",
-    "email": "david@example.com",
+    "name": "Nabin Gautam",
+    "email": "nabin@example.com",
     "phone": "4155550141",
     "department": "Engineering",
     "yearsExperience": 8,
@@ -49,8 +49,8 @@
   },
   {
     "id": 5,
-    "name": "Emma Davis",
-    "email": "emma@example.com",
+    "name": "Asmita Bhandari",
+    "email": "asmita@example.com",
     "phone": "4155550188",
     "department": "Marketing",
     "yearsExperience": 3,
@@ -58,5 +58,41 @@
     "bonusPercent": 0.07,
     "hireDate": "2023-02-14",
     "active": true
+  },
+  {
+    "id": 6,
+    "name": "Roshan Adhikari",
+    "email": "roshan@example.com",
+    "phone": "4155550199",
+    "department": "Sales",
+    "yearsExperience": 6,
+    "salary": 78000,
+    "bonusPercent": 0.09,
+    "hireDate": "2021-11-12",
+    "active": true
+  },
+  {
+    "id": 7,
+    "name": "Sneha KC",
+    "email": "sneha@example.com",
+    "phone": "4155550202",
+    "department": "Product",
+    "yearsExperience": 2,
+    "salary": 65000,
+    "bonusPercent": 0.05,
+    "hireDate": "2023-05-18",
+    "active": true
+  },
+  {
+    "id": 8,
+    "name": "Bikash Oli",
+    "email": "bikash@example.com",
+    "phone": "4155550217",
+    "department": "Engineering",
+    "yearsExperience": 9,
+    "salary": 98000,
+    "bonusPercent": 0.14,
+    "hireDate": "2019-08-25",
+    "active": false
   }
 ]

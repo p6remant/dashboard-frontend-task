@@ -19,7 +19,7 @@
   },
   {
     "id": 3,
-    "name": "Detergent 2kg",
+    "name": "Detergent Powder 2kg",
     "category": "Cleaning",
     "brand": "BrightWash",
     "unit": "Pkt",
@@ -28,11 +28,74 @@
   },
   {
     "id": 4,
-    "name": "Green Tea 25 bags",
+    "name": "Green Tea 25 Bags",
     "category": "Grocery",
-    "brand": "BrightWash",
+    "brand": "GoldLeaf",
     "unit": "Box",
     "stock": 42,
+    "active": true
+  },
+  {
+    "id": 5,
+    "name": "Wai Wai Instant Noodles",
+    "category": "Grocery",
+    "brand": "RoyalGrain",
+    "unit": "Pkt",
+    "stock": 250,
+    "active": true
+  },
+  {
+    "id": 6,
+    "name": "Mustard Oil 1L",
+    "category": "Grocery",
+    "brand": "BrightWash",
+    "unit": "Pcs",
+    "stock": 68,
+    "active": true
+  },
+  {
+    "id": 7,
+    "name": "Agarbatti Premium Pack",
+    "category": "Incense",
+    "brand": "GoldLeaf",
+    "unit": "Box",
+    "stock": 34,
+    "active": false
+  },
+  {
+    "id": 8,
+    "name": "Herbal Soap Bar",
+    "category": "Cleaning",
+    "brand": "BrightWash",
+    "unit": "Pcs",
+    "stock": 120,
+    "active": true
+  },
+  {
+    "id": 9,
+    "name": "Premium Lentils 1kg",
+    "category": "Grocery",
+    "brand": "RoyalGrain",
+    "unit": "Bag",
+    "stock": 89,
+    "active": false
+  },
+  {
+    "id": 10,
+    "name": "Organic Mustard Seeds",
+    "category": "Grocery",
+    "brand": "RoyalGrain",
+    "unit": "Bag",
+    "stock": 64,
+    "active": true
+  },
+  {
+    "id": 11,
+    "name": "Floor Cleaner Liquid",
+    "category": "Cleaning",
+    "brand": "BrightWash",
+    "unit": "Pcs",
+    "stock": 52,
     "active": true
   }
 ]
