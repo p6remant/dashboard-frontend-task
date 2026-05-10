@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useEditableTable } from '@/hooks/useEditableTable';
@@ -149,10 +149,9 @@ export default function UserPage() {
   }, [debouncedTableSearch, table]);
 
   const departmentFilterValue = (table.getColumn('department')?.getFilterValue() as string) ?? '';
-  const statusFilterValue = useMemo(() => {
-    const val = table.getColumn('status')?.getFilterValue();
-    return val !== undefined ? String(val) : '';
-  }, [table]);
+  const rawStatusFilter = table.getColumn('status')?.getFilterValue();
+  const statusFilterValue =
+    rawStatusFilter !== undefined ? String(rawStatusFilter) : '';
 
   return (
     <div className="space-y-6">
