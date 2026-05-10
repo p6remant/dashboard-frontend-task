@@ -70,7 +70,7 @@ const BackBar = memo(({ onBack }: { onBack: () => void }) => (
       type="button"
       variant="ghost"
       size="sm"
-      className="gap-1.5 -ml-2 text-muted-foreground hover:bg-transparent hover:opacity-100 hover:text-foreground"
+      className="gap-1.5 -ml-2 text-muted-foreground hover:bg-transparent! hover:opacity-100 hover:text-foreground dark:hover:bg-transparent! active:bg-transparent! dark:active:bg-transparent!"
       onClick={onBack}
     >
       <ArrowLeft className="size-4 shrink-0" aria-hidden />
