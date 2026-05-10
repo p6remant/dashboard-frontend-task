@@ -1,476 +1,144 @@
-# NexusGrid Design & Architecture Documentation
+# Dashboard — design and architecture
 
-## 🏗️ Core Philosophy
+This document describes how the dashboard is structured today: two primary domains (users and products), shared table infrastructure, mock data, and UI patterns.
 
-NexusGrid treats the table not just as a component, but as a **mini-framework** within the app. The design philosophy centers on:
+## Philosophy
 
-1. **Separation of Concerns**: Logic and presentation are decoupled
-2. **Type Safety**: Full TypeScript with Zod for runtime validation
-3. **Extensibility**: Easy to add new column types, validators, and formatters
-4. **Reusability**: Composable components and hooks
-5. **Single Responsibility**: Each component does one thing well
+1. **Separation of concerns** — Pages orchestrate data (TanStack Query) and UI state; hooks own table configuration; cells and modals stay focused.
+2. **Type safety** — TypeScript at boundaries; Zod for runtime validation on save and on modal submit.
+3. **Headless table logic** — TanStack Table for sorting, filtering, pagination, and (on users) column resize without locking layout to a specific table kit.
+4. **Progressive complexity** — Users get full inline editing; products stay simpler (modal-based CRUD on a read-only grid).
 
-## 🧱 Architectural Layers
-
-```
-┌─────────────────────────────────────────┐
-│         Presentation Layer              │
-│  (ShadCN UI Components + Tailwind)      │
-├─────────────────────────────────────────┤
-│         Component Layer                 │
-│  (DataTable, EditableCell, Toolbar)     │
-├─────────────────────────────────────────┤
-│         State Management Layer          │
-│  (useEditableTable Hook + Validation)   │
-├─────────────────────────────────────────┤
-│         Data Layer                      │
-│  (TanStack Query + Mock API)            │
-├─────────────────────────────────────────┤
-│         Utility Layer                   │
-│  (Formatters, Validators, Helpers)      │
-└─────────────────────────────────────────┘
-```
-
-## 📊 Data Flow Diagram
-
-```mermaid
-graph TD
-    A[User Interaction] -->|Click Edit| B[handleEdit]
-    B -->|Set editingRowId| C[useEditableTable]
-    C -->|Re-render| D[DataTable]
-    D -->|editingRowId === row.id| E{Render Mode}
-    E -->|true| F[EditableCell - Edit Mode]
-    E -->|false| G[EditableCell - View Mode]
-    
-    F -->|onChange| H[handleRowStateChange]
-    H -->|Update local rowState| C
-    
-    I[User clicks Save] -->|onSave| J[validateUser]
-    J -->|Valid| K[updateUser API]
-    J -->|Invalid| L[Set field errors]
-    L -->|Show in cells| F
-    
-    K -->|Success| M[invalidateQueries]
-    M -->|Refetch data| N[Toast success]
-    N -->|Reset state| C
-```
-
-## 🔄 State Management Flow
-
-### useEditableTable Hook
-
-The custom hook manages three primary concerns:
-
-```typescript
-// 1. TanStack Table State
-const table = useReactTable({
-  data,
-  columns,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-});
-
-// 2. Editing State
-const [editingRowId, setEditingRowId] = useState<number | null>(null);
-const [rowState, setRowState] = useState<Partial<User>>({});
-
-// 3. Error State
-const [errors, setErrors] = useState<Record<string, string>>({});
-```
-
-**Why this structure?**
-- Keeps logic separate from presentation
-- Easy to test individual concerns
-- Clear props interface for DataTable
-
-## 🔀 Column Metadata System
-
-Each column definition includes optional metadata to drive behavior:
-
-```typescript
-interface ColumnDef<User> {
-  accessorKey: 'salary';
-  header: 'Salary';
-  meta?: {
-    editable: boolean;    // Allow inline editing
-    type: 'currency';     // Input type selector
-    required: boolean;    // Validation requirement
-    validator?: ZodType;  // Custom validation
-  };
-}
-```
-
-**Type Mapping:**
-| Type | Input Component | Formatter | Parser |
-|------|-----------------|-----------|--------|
-| `text` | `<Input />` | Identity | Identity |
-| `number` | `<Input type="number" />` | Stringified | parseFloat |
-| `currency` | `<Input type="number" />` | `formatCurrency` | `parseCurrency` |
-| `date` | `<Input type="date" />` | `formatDate` | `parseDate` |
-| `select` | `<Select />` | Identity | Identity |
-| `checkbox` | `<Switch />` | Checkmark display | Boolean |
-
-## ✅ Validation Pipeline
+## Architectural layers
 
 ```
-User Input → EditableCell
-    ↓
-handleRowStateChange (local update)
-    ↓
-User clicks "Save"
-    ↓
-validateUser(rowState)
-    ↓
-Zod Schema Validation
-    ├─ Valid → API Call
-    ├─ Invalid → fieldErrors mapped to cells
-    └─ Cells re-render with error borders
+┌─────────────────────────────────────────────┐
+│  Shell: Layout, Sidebar, Header           │
+│  (routing, theme, URL search `q`)         │
+├─────────────────────────────────────────────┤
+│  Pages: Dashboard, User, Product          │
+│  (queries, mutations, modals, toolbars)   │
+├─────────────────────────────────────────────┤
+│  Table UI: DataTable, ProductsListTable,  │
+│  EditableCell, toolbars, pagination        │
+├─────────────────────────────────────────────┤
+│  Hooks: useEditableTable, useProductsTable,│
+│  useTableState, useDebounce                │
+├─────────────────────────────────────────────┤
+│  Data: TanStack Query + lib/api mock       │
+├─────────────────────────────────────────────┤
+│  Utils: formatters, validations, cn,      │
+│  constants (filters, sidebar, search)    │
+└─────────────────────────────────────────────┘
 ```
 
-### Zod Schema Structure
+**App shell** (`App.tsx`): `QueryClientProvider`, `BrowserRouter`, `AppErrorBoundary`, `Suspense` (fallback: `SplashScreen`), nested routes under `Layout`, `Sonner` toaster, catch-all redirect to `/`.
 
-```typescript
-const userSchema = z.object({
-  id: z.number(),
-  name: z.string()
-    .min(1, 'Name is required')
-    .min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  salary: z.number().positive('Salary must be positive'),
-  // ... more fields
-});
+**Routing** (`routes/routes.ts`): lazy-loaded page components for `/`, `/users`, `/products` to keep initial bundle small.
+
+## Two table modes
+
+### Users — inline editing
+
+- **useEditableTable** composes **useReactTable** with `useTableState` and local state: `editingRowId`, `rowState`, `errors`, optional **columnSizing** / resize handlers.
+- **DataTable** receives the table instance and callbacks: `onEdit`, `onSave`, `onCancel`, `onView`, `onDelete`, `onRowStateChange`, plus loading flags for save/delete per row.
+- Row actions: outline **Button**s; edit mode swaps to save/cancel.
+- Validation runs on **save** via `validateUser` (`userSchema`); field errors map to `EditableCell` by column id / `userField` meta.
+
+### Products — display + modal CRUD
+
+- **useProductsTable** only wires TanStack Table + `useTableState`; no edit row state in the hook.
+- **ProductsListTable** renders read-only cells and uses **table.options.meta** (`ProductsTableMeta`) to expose `onEditProduct` from the page.
+- Create and update go through **AddProductModal** + `createProduct` / `updateProduct`; Zod schemas align form fields with the `Product` type.
+
+This split avoids stretching `EditableCell` to every entity and keeps product rules in one modal form.
+
+## Column metadata (`TableMeta`)
+
+Defined in `src/types/index.ts` and consumed by **EditableCell**:
+
+| Field | Purpose |
+|--------|---------|
+| `editable` | Cell can show input when row is editing |
+| `type` | `text` \| `number` \| `currency` \| `date` \| `select` \| `checkbox` \| `phone` \| `percentage` |
+| `required` | Used with validation / UX |
+| `userField` | Map column to a `User` key when id differs (e.g. status column) |
+| `mutedLinkAccent` | Subtle link styling for display mode (e.g. email) |
+
+Product columns use standard `accessorKey` / `cell` renderers and **StatusBadge** for `active`.
+
+## Validation pipeline
+
+```
+Inline row (users)
+  Input → rowState → Save → validateUser(Zod) → updateUser → invalidateQueries
+
+Modal (users / products)
+  RHF → resolver/schema → mutate → invalidateQueries → toast
 ```
 
-**Error Mapping:**
-- Zod errors → fieldErrors object
-- Keys match column.id for cell-level display
-- Errors clear as user types (via handleRowStateChange)
+- Row errors clear as the user edits (`setErrors` / field updates from the page hook usage).
+- Add flows use dedicated schemas: `addUserSchema`, `addProductSchema` (and related types) where enums or refinements differ from full entity updates.
 
-## 🎯 Component Responsibilities
+## Mock API (`lib/api.ts`)
 
-### DataTable.tsx
-**Purpose**: Orchestrate TanStack Table with ShadCN UI
-**Responsibilities**:
-- Accept columns, data, and callbacks
-- Render table rows via TanStack
-- Switch between view/edit modes per row
-- Integrate EditableCell
-- Display action buttons
-- Handle visual feedback (blue highlight on edit)
+- **structuredClone** of `mock/data.json` and `mock/products.json` into mutable in-memory arrays.
+- Shared `delay(ms)` simulates latency on every call.
+- **Users**: `fetchUsers`, `updateUser`, `deleteUser`, `createUser`.
+- **Products**: `fetchProducts`, `createProduct`, `updateProduct`.
 
-**Props**:
-```typescript
-interface DataTableProps {
-  table: TanStackTableInstance;
-  editingRowId: number | null;
-  rowState: Partial<User>;
-  errors: Record<string, string>;
-  onEdit: (row: User) => void;
-  onSave: (rowData: Partial<User>) => Promise<void>;
-  onCancel: () => void;
-  onDelete: (userId: number) => Promise<void>;
-  onRowStateChange: (field: keyof User, value: any) => void;
-}
-```
+No network stack dependency: easy swap for `fetch` to a real backend keeping the same function signatures.
 
-### EditableCell.tsx
-**Purpose**: Smart cell renderer with view/edit mode switching
-**Responsibilities**:
-- Detect editing state
-- Render appropriate input component based on column.meta.type
-- Apply formatters in view mode
-- Parse values from inputs
-- Display error styling
-- Handle onChange events
+## Global search
 
-**Type-to-Component Mapping Logic**:
-```typescript
-if (meta?.type === 'currency') {
-  return <Input type="number" ... />;
-} else if (meta?.type === 'date') {
-  return <Input type="date" ... />;
-} else if (meta?.type === 'select') {
-  return <Select ... />;
-} // ... more types
-```
+- Implemented in **Header** with `useSearchParams`: debounced writes to `q`.
+- Dropdown uses static copies of mock JSON (not the live store), filtered by name; category chips narrow which sections appear.
+- Constants such as debounce/exit timing live in `lib/constants/search.ts`.
 
-### TableToolbar.tsx
-**Purpose**: Search and filter interface
-**Responsibilities**:
-- Render search input
-- Connect to TanStack globalFilter
-- Debounce search (optional enhancement)
-- Clear search button
+Trade-off: search results can diverge from table data until a refresh strategy is added; acceptable for a demo shell.
 
-### TablePagination.tsx
-**Purpose**: Pagination controls
-**Responsibilities**:
-- Display current page info
-- Previous/Next buttons
-- Hook into TanStack pagination state
+## Shared table state (`useTableState`)
 
-### Layout Components (Sidebar, Header, Layout)
-**Purpose**: Shell and navigation
-**Responsibilities**:
-- Responsive sidebar navigation
-- Theme toggle in header
-- Route-aware highlighting
-- Mobile menu toggle
+Single hook for **sorting**, **columnFilters**, **globalFilter**, **pagination** updaters. **useEditableTable** and **useProductsTable** both consume it so toolbar and pagination behave consistently across pages.
 
-## 🔌 API Layer Design
+## Styling
 
-### Mock API (lib/api.ts)
+- **Tailwind CSS v4** with PostCSS (`@tailwindcss/postcss`), design tokens in `index.css`, `tailwind-merge` + `cn()` in components.
+- **Dark mode**: `dark` class on `document.documentElement`; components use `dark:` variants.
 
-```typescript
-// In-memory data store
-let mockUsers: User[] = [...];
+## Error and loading UX
 
-// Simulated delays (500ms) for realism
-const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+- **AppErrorBoundary**: catches render errors in the tree below the router layout.
+- **Suspense** + **SplashScreen**: route-level lazy loading.
+- **TableListSkeleton**: shared placeholder while user/product lists load.
+- **RetryCard**: surfaces query errors with a refetch action on list pages.
 
-// CRUD operations
-export const fetchUsers = async (): Promise<User[]>;
-export const updateUser = async (user: User): Promise<User>;
-export const deleteUser = async (userId: number): Promise<void>;
-export const createUser = async (user: Omit<User, 'id'>): Promise<User>;
-```
+## Extensibility
 
-**Why this approach?**
-- No backend needed for development
-- Realistic network delays teach async patterns
-- Easy to replace with real API endpoints
-- Perfect for interview demonstrations
+1. **New list page** — Add route, page with `useQuery` + `useTableState` (or a new hook), toolbar, `TablePagination`, skeleton/error card as needed.
+2. **New user column** — Extend `User`, JSON seed, `userTableHeader` meta, `EditableCell`, `userSchema`, and optionally `lib/constants/tableFilters.ts`.
+3. **Real API** — Replace bodies of `lib/api.ts` exports with HTTP calls; keep return types identical so pages stay unchanged.
 
-## 🎨 Styling Architecture
+## Design decisions
 
-### Design Token System
+| Topic | Choice | Rationale |
+|--------|--------|------------|
+| User vs product editing | Inline vs modal | Rich grid editing for users; faster product screen without cell editors |
+| Mock store | Module-level arrays | Simple, no DB; mirrors CRUD mental model |
+| URL `q` | Synced search | Sharable/bookmarkable search state from the header |
+| Lazy routes | Yes | Smaller first paint; explicit loading state |
+| Column resize | Users only | Dense HR-style grid; products table stays lighter |
 
-```css
-:root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 3.6%;
-  --primary: 0 0% 9.0%;
-  --muted: 0 0% 96.1%;
-  /* ... more tokens */
-}
+## Performance notes
 
-.dark {
-  --background: 0 0% 3.6%;
-  --foreground: 0 0% 98.2%;
-  /* ... inverted tokens */
-}
-```
+- Column defs and meta objects should stay **memoized** on pages (`useMemo`) to avoid resetting TanStack Table state each render.
+- **Debounced** table search (e.g. 300ms) reduces filter churn on large client-side rows.
+- Pagination limits rows in the DOM; global filter runs on the current page’s model per TanStack configuration (see page + hook wiring).
 
-**Usage in Components**:
-```tsx
-<div className="bg-background text-foreground">
-  <button className="bg-primary text-primary-foreground">
-    Save
-  </button>
-</div>
-```
+## Testing (not yet in repo)
 
-### Tailwind Integration
-- Utility-first approach
-- Design tokens as CSS custom properties
-- Responsive prefixes (md:, lg:, etc.)
-- Dark mode via `.dark` class toggle
-
-## 🔑 Key Extensibility Points
-
-### 1. Adding a New Column Type
-
-**Step 1**: Update `types/index.ts`
-```typescript
-type: 'currency' | 'date' | 'phone' | 'percent' | 'email';
-```
-
-**Step 2**: Add formatter/parser in `lib/formatters.ts`
-```typescript
-export const formatPhone = (value: string): string => {
-  // Implementation
-};
-```
-
-**Step 3**: Add input handler in `EditableCell.tsx`
-```typescript
-if (meta?.type === 'phone') {
-  return <Input value={value} onChange={...} />;
-}
-```
-
-**Step 4**: Add validation in `userSchema.ts`
-```typescript
-phone: z.string().regex(/^\d{10}$/, 'Invalid phone');
-```
-
-### 2. Custom Validators
-
-```typescript
-// Define in userSchema.ts
-const customValidation = z.object({
-  fieldA: z.number(),
-  fieldB: z.string(),
-}).refine(
-  (data) => data.fieldA < 100,
-  { message: "FieldA must be less than 100" }
-);
-```
-
-### 3. Custom Hooks
-
-Extend `useEditableTable` for specific features:
-```typescript
-export const useMultiSelectTable = () => {
-  const { ...tableLogic } = useEditableTable(...);
-  const [selected, setSelected] = useState<number[]>([]);
-  
-  return { ...tableLogic, selected, setSelected };
-};
-```
-
-## 🧪 Testing Strategy
-
-### Unit Tests (Component Level)
-```typescript
-describe('EditableCell', () => {
-  it('renders span in view mode', () => {
-    render(<EditableCell isEditing={false} ... />);
-    expect(screen.getByText('value')).toBeInTheDocument();
-  });
-  
-  it('renders input in edit mode', () => {
-    render(<EditableCell isEditing={true} ... />);
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
-  });
-});
-```
-
-### Integration Tests (Feature Level)
-```typescript
-describe('Table Editing', () => {
-  it('edits a row and saves with validation', async () => {
-    // 1. Render TablePage
-    // 2. Click edit on row
-    // 3. Update field
-    // 4. Click save
-    // 5. Verify API called
-    // 6. Verify data updated
-  });
-});
-```
-
-### Validation Tests
-```typescript
-describe('userSchema', () => {
-  it('validates valid user', () => {
-    const valid = userSchema.parse(validUser);
-    expect(valid).toBeDefined();
-  });
-  
-  it('rejects invalid email', () => {
-    expect(() => userSchema.parse({ ...user, email: 'invalid' }))
-      .toThrow();
-  });
-});
-```
-
-## 🎯 Design Decisions & Trade-offs
-
-### 1. Row-level vs Cell-level Editing
-**Decision**: Row-level editing
-**Reasoning**:
-- Simpler validation (entire row context)
-- Better UX (clear save/cancel actions)
-- Prevents partial saves
-- Easier to implement undo/redo
-
-### 2. TanStack Table (Headless) vs Material-UI Table
-**Decision**: TanStack Table
-**Reasoning**:
-- Complete logic control
-- Integrates seamlessly with ShadCN
-- No hidden assumptions
-- Highly composable
-
-### 3. Zod vs Other Validators
-**Decision**: Zod
-**Reasoning**:
-- TypeScript-first design
-- Excellent error messages
-- Composable schemas
-- Built-in transforms
-- Small bundle size
-
-### 4. In-Memory API vs Backend
-**Decision**: In-memory mock
-**Reasoning**:
-- No setup required
-- Perfect for interviews/demos
-- Easy to replace with real API
-- Teaches async/await patterns
-
-## 📈 Performance Considerations
-
-### Render Optimization
-- Use `useMemo` for column definitions (never change reference)
-- Avoid inline object/function creation in render
-- useCallback for event handlers in hooks
-
-### Query Optimization
-- TanStack Query caching prevents re-fetching
-- Pagination limits DOM nodes rendered
-- Debounced search reduces processing
-
-### Memory Management
-- Mock API stores data in closure
-- No memory leaks from event listeners
-- Cleanup in useEffect (if used)
-
-## 🔐 Security Considerations
-
-1. **Input Validation**: All inputs validated via Zod
-2. **XSS Prevention**: React escaping + no dangerouslySetInnerHTML
-3. **Error Messages**: Generic messages for API errors
-4. **Type Safety**: TypeScript prevents type confusion
-
-## 📚 Reusability Matrix
-
-| Component | Reusable | Customizable | Standalone |
-|-----------|----------|--------------|-----------|
-| DataTable | ✅ | ✅ | ❌ (requires data/callbacks) |
-| EditableCell | ✅ | ✅ | ✅ |
-| TableToolbar | ✅ | ✅ | ✅ |
-| TablePagination | ✅ | ✅ | ✅ |
-| useEditableTable | ✅ | ⚠️ (hard to extend) | ✅ |
-| Layout | ⚠️ (app-specific) | ✅ | ✅ |
-
-## 🚀 Optimization Roadmap
-
-### Phase 1 (Current)
-- Basic editing and validation
-- In-memory mock API
-- Single table view
-
-### Phase 2
-- Server-side pagination
-- Column visibility toggle
-- Batch operations
-
-### Phase 3
-- Real-time collaboration
-- Undo/redo stack
-- Advanced filtering
-- Export to CSV/Excel
-
-### Phase 4
-- Role-based access control
-- Audit logging
-- Time-travel debugging
+Suggested direction: Vitest + Testing Library for `validateUser` / product schemas, `EditableCell` view vs edit, and mutation + invalidation behavior behind mocked `lib/api`.
 
 ---
 
-**This architecture is designed for clarity, maintainability, and scalability.**
-**Every decision prioritizes clean code and extensibility.**
+This file is the canonical place for **why** the code is shaped as it is; **README.md** covers **what** is in the repo and how to run it.
