@@ -13,6 +13,12 @@ export const fetchUsers = async (): Promise<User[]> => {
   return mockUsers.map((user) => ({ ...user }));
 };
 
+export const fetchUserById = async (id: number): Promise<User | null> => {
+  await delay(300);
+  const user = mockUsers.find((u) => u.id === id);
+  return user ? { ...user } : null;
+};
+
 export const updateUser = async (user: User): Promise<User> => {
   await delay(500);
   const existingUser = mockUsers.find((u) => u.id === user.id);
@@ -44,6 +50,12 @@ export const createUser = async (user: Omit<User, 'id'>): Promise<User> => {
 export const fetchProducts = async (): Promise<Product[]> => {
   await delay(500);
   return mockProducts.map((product) => ({ ...product }));
+};
+
+export const fetchProductById = async (id: number): Promise<Product | null> => {
+  await delay(300);
+  const product = mockProducts.find((p) => p.id === id);
+  return product ? { ...product } : null;
 };
 
 export const createProduct = async (product: Omit<Product, 'id'>): Promise<Product> => {
