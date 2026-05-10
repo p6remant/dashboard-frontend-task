@@ -32,7 +32,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-4xl font-bold tracking-tight">Welcome to Dashboard</h1>
+      <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Welcome to Dashboard</h1>
 
       <div className="grid gap-4 md:grid-cols-3">
         {stats.map((stat) => {
