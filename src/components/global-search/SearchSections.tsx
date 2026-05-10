@@ -1,6 +1,4 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { Search } from 'lucide-react';
 
 export const searchResultRowClassName =
   'flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/45';
@@ -32,16 +30,18 @@ export function SearchResultSection({ title, children, onClear }: SearchResultSe
   );
 }
 
+/* OTHER section quick rows — used by SearchDropdown when “Other” is enabled (currently commented out there).
 interface QuickSearchLinkProps {
   query: string;
   scope: string;
-  toWithSearch: string;
+  to: string;
+  onSelectResult: () => void;
 }
 
-export function QuickSearchLink({ query, scope, toWithSearch }: QuickSearchLinkProps) {
+export function QuickSearchLink({ query, scope, to, onSelectResult }: QuickSearchLinkProps) {
   return (
     <li>
-      <Link to={toWithSearch} className={searchResultRowClassName}>
+      <Link to={to} className={searchResultRowClassName} onClick={onSelectResult}>
         <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <span className="text-sm">
           Search for <span className="font-semibold text-foreground">&quot;{query}&quot;</span> in {scope}
@@ -50,3 +50,4 @@ export function QuickSearchLink({ query, scope, toWithSearch }: QuickSearchLinkP
     </li>
   );
 }
+*/

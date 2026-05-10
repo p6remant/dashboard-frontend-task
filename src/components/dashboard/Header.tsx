@@ -25,8 +25,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const [mountDropdown, setMountDropdown] = useState(false);
   const [activeCategory, setActiveCategory] = useState<SearchCategory>(SearchCategory.All);
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  const [visibility, setVisibility] = useState({ users: true, products: true, other: true });
+  const [visibility, setVisibility] = useState({ users: true, products: true });
   
   const urlQuery = searchParams.get('q') ?? '';
   const [localSearchTerm, setLocalSearchTerm] = useState(urlQuery);
@@ -47,7 +46,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     return PRODUCTS_LIST.filter(product => product.name.toLowerCase().includes(urlQuery.toLowerCase()));
   }, [urlQuery, activeCategory]);
 
-  const hasAnySection = visibility.users || visibility.products || visibility.other;
+  const hasAnySection = visibility.users || visibility.products;
   const showDropdown = isSearchActive && urlQuery.length > 0 && hasAnySection;
   const isDropdownClosing = mountDropdown && !showDropdown;
 
@@ -60,19 +59,23 @@ export function Header({ onMenuClick }: HeaderProps) {
     document.documentElement.classList.toggle('dark');
   }, []);
 
-  const handleGlobalReset = useCallback(() => {
-    setLocalSearchTerm('');
-    setActiveCategory(SearchCategory.All);
-    setVisibility({ users: true, products: true, other: true });
+  const dismissSearchDropdown = useCallback(() => {
     setIsSearchActive(false);
     setMountDropdown(false);
+    setVisibility({ users: true, products: true });
+    setActiveCategory(SearchCategory.All);
     containerRef.current?.querySelector('input')?.blur();
+  }, []);
+
+  const handleGlobalReset = useCallback(() => {
+    setLocalSearchTerm('');
+    dismissSearchDropdown();
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
       next.delete('q');
       return next;
     }, { replace: true });
-  }, [setSearchParams]);
+  }, [setSearchParams, dismissSearchDropdown]);
 
   const updateVisibility = useCallback((key: keyof typeof visibility) => {
     setVisibility(prev => ({ ...prev, [key]: false }));
@@ -90,7 +93,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   useEffect(() => {
     setLocalSearchTerm(urlQuery);
-    if (urlQuery) setVisibility({ users: true, products: true, other: true });
+    if (urlQuery) setVisibility({ users: true, products: true });
   }, [urlQuery]);
 
   useEffect(() => {
@@ -114,7 +117,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     const timer = window.setTimeout(() => {
       setMountDropdown(false);
       setIsSearchActive(false);
-      setVisibility({ users: true, products: true, other: true });
+      setVisibility({ users: true, products: true });
     }, SEARCH_DROPDOWN_EXIT_MS);
     return () => window.clearTimeout(timer);
   }, [showDropdown, mountDropdown]);
@@ -151,13 +154,12 @@ export function Header({ onMenuClick }: HeaderProps) {
             filteredProducts={filteredProducts}
             usersSectionVisible={visibility.users}
             productsSectionVisible={visibility.products}
-            isOtherVisible={visibility.other}
             isClosing={isDropdownClosing}
             onCategoryChange={setActiveCategory}
             onReset={handleGlobalReset}
+            onSelectResult={dismissSearchDropdown}
             onClearUsersSection={() => updateVisibility('users')}
             onClearProductsSection={() => updateVisibility('products')}
-            onClearOtherSection={() => updateVisibility('other')}
           />
         )}
       </div>
