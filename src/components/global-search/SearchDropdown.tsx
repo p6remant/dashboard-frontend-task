@@ -47,7 +47,12 @@ export function SearchDropdown({
       aria-label="Search results"
       onMouseDown={(e) => e.preventDefault()}
       className={cn(
-        'absolute top-full right-0 left-0 z-50 mt-2 max-h-[70vh] origin-top overflow-y-auto rounded-xl border border-neutral-100 bg-card text-card-foreground shadow-2xl dark:border-neutral-800',
+        'z-50 max-h-[70vh] origin-top overflow-y-auto border border-border/60 bg-card text-card-foreground ring-1 ring-border/50 dark:border-border/70 dark:ring-border/40',
+        '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+        'max-lg:fixed max-lg:left-[max(0.75rem,env(safe-area-inset-left))] max-lg:right-[max(0.75rem,env(safe-area-inset-right))] max-lg:top-18 max-lg:max-h-[min(70vh,calc(100dvh-5.5rem))]',
+        'max-lg:rounded-2xl max-lg:bg-card/95 max-lg:shadow-[0_4px_24px_-6px_rgba(15,23,42,0.08),0_2px_8px_-4px_rgba(15,23,42,0.05)] max-lg:backdrop-blur-md',
+        'dark:max-lg:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.22),0_2px_8px_-4px_rgba(0,0,0,0.12)]',
+        'lg:absolute lg:top-full lg:mt-2 lg:left-0 lg:right-0 lg:w-auto lg:rounded-xl lg:shadow-lg',
         isClosing
           ? 'animate-out fade-out-0 zoom-out-95 slide-out-to-top-1 duration-200 ease-in'
           : 'animate-in fade-in-0 zoom-in-95 slide-in-from-top-1 duration-200 ease-out',

@@ -14,7 +14,7 @@ interface SearchResultSectionProps {
 export function SearchResultSection({ title, children, onClear }: SearchResultSectionProps) {
   return (
     <>
-      <div className="border-t border-neutral-100 dark:border-neutral-800" />
+      <div className="border-t border-border/60 dark:border-border/70" />
       <section className="py-1">
         <div className="flex items-center justify-between px-3 pt-1 pb-2">
           <span className="text-xs font-bold tracking-tight text-muted-foreground uppercase">{title}</span>
