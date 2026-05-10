@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useEditableTable } from '@/hooks/useEditableTable';
@@ -20,7 +21,9 @@ import { createUser, fetchUsers, updateUser, deleteUser } from '@/lib/api';
 
 export default function UserPage() {
   const queryClient = useQueryClient();
-  
+  const location = useLocation();
+  const skipLocationModalReset = useRef(true);
+
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [pendingDeleteUser, setPendingDeleteUser] = useState<User | null>(null);
@@ -147,6 +150,16 @@ export default function UserPage() {
   useEffect(() => {
     table.setGlobalFilter(debouncedTableSearch);
   }, [debouncedTableSearch, table]);
+
+  useEffect(() => {
+    if (skipLocationModalReset.current) {
+      skipLocationModalReset.current = false;
+      return;
+    }
+    setSelectedUser(null);
+    setIsAddOpen(false);
+    setPendingDeleteUser(null);
+  }, [location.pathname, location.search]);
 
   const departmentFilterValue = (table.getColumn('department')?.getFilterValue() as string) ?? '';
   const rawStatusFilter = table.getColumn('status')?.getFilterValue();
