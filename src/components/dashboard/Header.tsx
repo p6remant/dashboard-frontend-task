@@ -129,7 +129,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       <div
         ref={containerRef}
-        className="relative min-w-0 flex-1 lg:max-w-md"
+        className="relative min-w-0 flex-1 lg:max-w-xl"
         onFocusCapture={() => setIsSearchActive(true)}
         onBlurCapture={handleBlur}
       >
