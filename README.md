@@ -16,7 +16,7 @@ The dashboard includes:
 ## Demo URL
 
 ```txt
-https://dashboard-frontend-task-9hn9r6p59.vercel.app/
+https://dashboard-frontend-task-chi.vercel.app/
 ```
 
 ---
