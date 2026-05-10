@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -17,6 +18,8 @@ import { Loader, Plus } from 'lucide-react';
 
 export default function ProductPage() {
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const skipLocationModalReset = useRef(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ProductFormMode>('create');
@@ -61,14 +64,6 @@ export default function ProductPage() {
     setTableSearch(value);
   }, []);
 
-  const handleCategoryFilterChange = useCallback((value: string) => {
-    table.getColumn('category')?.setFilterValue(value || undefined);
-  }, []);
-
-  const handleBrandFilterChange = useCallback((value: string) => {
-    table.getColumn('brand')?.setFilterValue(value || undefined);
-  }, []);
-
   const handleSaveProduct = useCallback(async (values: Omit<Product, 'id'>) => {
     if (modalMode === 'edit' && editingProduct) {
       await updateMutation.mutateAsync({ ...values, id: editingProduct.id });
@@ -95,8 +90,8 @@ export default function ProductPage() {
     void refetch();
   }, [refetch]);
 
-  const tableMeta = useMemo(() => ({ 
-    onEditProduct: handleEditProduct 
+  const tableMeta = useMemo(() => ({
+    onEditProduct: handleEditProduct,
   }), [handleEditProduct]);
 
   const { table } = useProductsTable({
@@ -105,9 +100,27 @@ export default function ProductPage() {
     meta: tableMeta,
   });
 
+  const handleCategoryFilterChange = useCallback((value: string) => {
+    table.getColumn('category')?.setFilterValue(value || undefined);
+  }, [table]);
+
+  const handleBrandFilterChange = useCallback((value: string) => {
+    table.getColumn('brand')?.setFilterValue(value || undefined);
+  }, [table]);
+
   useEffect(() => {
     table.setGlobalFilter(debouncedTableSearch);
   }, [debouncedTableSearch, table]);
+
+  useEffect(() => {
+    if (skipLocationModalReset.current) {
+      skipLocationModalReset.current = false;
+      return;
+    }
+    setIsModalOpen(false);
+    setEditingProduct(null);
+    setModalMode('create');
+  }, [location.pathname, location.search]);
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
   const categoryFilterValue = (table.getColumn('category')?.getFilterValue() as string) ?? '';
