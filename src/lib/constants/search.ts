@@ -1,0 +1,2 @@
+export const SEARCH_DEBOUNCE_DELAY = 300;
+export const SEARCH_DROPDOWN_EXIT_MS = 200;
