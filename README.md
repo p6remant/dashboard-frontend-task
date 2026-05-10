@@ -119,7 +119,9 @@ dashboard/
 │   ├── pages/
 │   │   ├── DashboardPage.tsx
 │   │   ├── UserPage.tsx
-│   │   └── ProductPage.tsx
+│   │   ├── ProductPage.tsx
+│   │   ├── UserDetailPage.tsx
+│   │   └── ProductDetailPage.tsx
 │   ├── routes/
 │   │   └── routes.ts
 │   ├── types/
@@ -141,7 +143,3 @@ dashboard/
 See `DESIGN.md` for detailed architecture, validation flow, table structure, and design decisions.
 
 ---
-
-## License
-
-MIT
