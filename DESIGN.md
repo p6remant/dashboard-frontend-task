@@ -23,6 +23,8 @@ App Shell
 
 Pages
   └── Dashboard, Users, Products
+      └── UserDetailPage
+      └── ProductDetailPage
 
 Shared Components
   └── DataTable, EditableCell, Pagination, Modals
@@ -224,12 +226,14 @@ The project currently uses an in-memory mock API.
 - `createUser`
 - `updateUser`
 - `deleteUser`
+- `fetchUserById`
 
 ### Products
 
 - `fetchProducts`
 - `createProduct`
 - `updateProduct`
+- `fetchProductById`
 
 All APIs simulate network latency and can later be replaced with real HTTP requests without changing the UI layer.
 
@@ -245,6 +249,7 @@ The header includes a debounced global search synced with the URL using the `q` 
 - URL sync
 - category filtering
 - dropdown suggestions
+- redirection to detail page
 
 The dropdown currently uses static mock data, which is acceptable for the demo setup.
 
