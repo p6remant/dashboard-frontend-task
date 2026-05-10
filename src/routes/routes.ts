@@ -10,7 +10,15 @@ export const routes = [
     component: lazy(() => import('@/pages/UserPage')),
   },
   {
+    path: '/users/:userId',
+    component: lazy(() => import('@/pages/UserDetailPage')),
+  },
+  {
     path: '/products',
     component: lazy(() => import('@/pages/ProductPage')),
+  },
+  {
+    path: '/products/:productId',
+    component: lazy(() => import('@/pages/ProductDetailPage')),
   },
 ];
